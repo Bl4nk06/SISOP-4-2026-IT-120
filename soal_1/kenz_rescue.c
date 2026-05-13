@@ -12,7 +12,6 @@
 static char dir_path[1024];
 
 void get_full_path(char *fpath, const char *path) {
-    // Menggunakan snprintf lebih aman daripada sprintf
     snprintf(fpath, 2048, "%s%s", dir_path, path);
 }
 
@@ -27,10 +26,10 @@ static int x_getattr(const char *path, struct stat *stbuf, struct fuse_file_info
     if (strcmp(path, "/tujuan.txt") == 0) {
         stbuf->st_mode = S_IFREG | 0444;
         stbuf->st_nlink = 1;
-        stbuf->st_size = 100; 
+        stbuf->st_size = 1024; 
         return 0;
     }
-    char fpath[2048]; // Perbesar ukuran buffer agar tidak overflow
+    char fpath[2048];
     get_full_path(fpath, path);
     int res = lstat(fpath, stbuf);
     if (res == -1) return -errno;
@@ -40,7 +39,7 @@ static int x_getattr(const char *path, struct stat *stbuf, struct fuse_file_info
 static int x_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info *fi, enum fuse_readdir_flags flags) {
     (void) offset; (void) fi; (void) flags;
-    char fpath[2048]; // Perbesar buffer
+    char fpath[2048];
     get_full_path(fpath, path);
     DIR *dp = opendir(fpath);
     if (dp == NULL) return -errno;
@@ -65,12 +64,8 @@ static int x_read(const char *path, char *buf, size_t size, off_t offset, struct
         char final_content[1024] = "Tujuan Mas Amba: ";
         char coords[512] = "";
         for (int i = 1; i <= 7; i++) {
-            // SOLUSI: Perbesar buffer fpath jadi 2048 agar GCC tenang
-            char fpath[2048], line[256]; 
-            
-            // Gunakan snprintf untuk keamanan ekstra
+            char fpath[2048], line[256];
             snprintf(fpath, sizeof(fpath), "%s/%d.txt", dir_path, i);
-            
             FILE *f = fopen(fpath, "r");
             if (f) {
                 while (fgets(line, sizeof(line), f)) {
@@ -87,16 +82,13 @@ static int x_read(const char *path, char *buf, size_t size, off_t offset, struct
         }
         strcat(final_content, coords);
         strcat(final_content, ", 23:59 WIB\n");
-
         size_t len = strlen(final_content);
         if (offset < (off_t)len) {
             if (offset + size > len) size = len - offset;
             memcpy(buf, final_content + offset, size);
         } else size = 0;
-        return size;
+        return (int)size;
     }
-    
-    // Gunakan buffer 2048 juga di sini
     char fpath[2048];
     get_full_path(fpath, path);
     int fd = open(fpath, O_RDONLY);
@@ -116,7 +108,8 @@ int main(int argc, char *argv[]) {
     if (argc < 3) return 1;
     char absolute_path[1024];
     if (realpath(argv[argc-2], absolute_path)) {
-        strncpy(dir_path, absolute_path, sizeof(dir_path));
+        strncpy(dir_path, absolute_path, sizeof(dir_path) - 1);
+        dir_path[sizeof(dir_path) - 1] = '\0';
     }
     argv[argc-2] = argv[argc-1];
     argc--;

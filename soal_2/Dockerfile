@@ -1,16 +1,21 @@
+# Gunakan base image sesuai instruksi soal
 FROM ubuntu:latest
 
-# Install dependensi (nc untuk testing, library fuse jika diperlukan)
-RUN apt-get update && apt-get install -y netcat-openbsd
-
-# Set workdir
+# Set direktori kerja di dalam kontainer ke /app
 WORKDIR /app
 
-# Copy server binary (asumsi sudah dicompile)
+# Salin file 'server' dari folder lokal ke direktori kerja (/app) di kontainer
+# Format: COPY <sumber_di_laptop> <tujuan_di_kontainer>
 COPY server /app/server
 
-# Expose port 9000
+# Beri izin eksekusi agar file server bisa dijalankan
+RUN chmod +x /app/server
+
+# Buat folder /app/db karena server akan mencari data di sana
+RUN mkdir -p /app/db
+
+# Expose port 9000 sesuai spek soal
 EXPOSE 9000
 
-# Jalankan server
+# Jalankan servernya
 CMD ["./server"]

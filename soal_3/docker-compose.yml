@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  libraryit-server:
+    build: .
+    container_name: libraryit-server
+    # Tambahkan ini biar container gak langsung exit pas ada error
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./data/ebooks:/libraryit/ebooks
+      - ./data/papers:/libraryit/papers
+      - ./data/sourcecode:/libraryit/sourcecode
+      - ./data/docs:/libraryit/docs 
+      - ./logs:/var/log/samba
+    ports:
+      - "1445:445"
+    restart: always
+
+  libraryit-logger:
+    image: alpine # Alpine lebih lengkap command-nya dibanding busybox
+    container_name: libraryit-logger
+    depends_on:
+      - libraryit-server
+    volumes:
+      - ./logs:/var/log/samba
+    # Trik: Tunggu 5 detik baru tail, biar Samba sempet bikin filenya
+    command: sh -c "sleep 5 && tail -F /var/log/samba/libraryit.log"
+    restart: always

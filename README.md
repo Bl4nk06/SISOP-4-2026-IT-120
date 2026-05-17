@@ -264,22 +264,43 @@ gcc kenz_rescue.c -o kenz_rescue `pkg-config fuse3 --cflags --libs`
 ls mnt
 diff -s amba_files/1.txt mnt/1.txt
 
-# 4. Pengujian berkas virtual: Cek stat dan isi dari tujuan.txt
-stat mnt/tujuan.txt
+# 4. Cek isi tujuan.txt dari directory amba_files dan mnt
+cat amba_files/tujuan.txt
 cat mnt/tujuan.txt
 
 # 5. Jika sudah selesai pengujian, unmount folder mnt
 fusermount3 -u mnt
-
 ```
 
 ---
 
 ### **Output**
 
-* Tampilan terminal saat menjalankan program `kenz_rescue` dan melakukan mount ke direktori tujuan.
+* Tampilan hasil run program FUSE dengan `./kenz_rescue amba_files mnt`
 
-* Tampilan hasil perintah `ls -la` pada direktori mount dan isi dari file `tujuan.txt` yang merupakan hasil penggabungan koordinat dari file-file log.
+    ![Soal1_Img1](./Assets/soal_1/Img1.png)
+
+    ![Soal1_Img2](./Assets/soal_1/Img2.png)
+
+* Tampilan tes dengan `ls mnt`
+
+	![Soal1_Img3](./Assets/soal_1/Img3.png)
+
+* Tampilan tes dengan `diff -s amba_files/1.txt mnt/1.txt`
+
+    ![Soal1_Img4](./Assets/soal_1/Img4.png)
+
+* Tampilan tes dengan `cat amba_files/tujuan.txt`
+
+    ![Soal1_Img5](./Assets/soal_1/Img5.png)
+
+* Cek isi dengan `cat mnt/tujuan.txt`
+
+    ![Soal1_Img6](./Assets/soal_1/Img6.png)
+
+* Titik koordinat di Maps
+
+    ![Soal1_Img7](./Assets/soal_1/Img7.png)
 
 ---
 
@@ -675,10 +696,10 @@ int main() {
 
 ```bash
 # 1. Compile file fuse.c menggunakan bendera pkg-config FUSE3
-gcc fuse.c -o fuse_app `pkg-config fuse3 --cflags --libs`
+gcc fuse.c -o fuse `pkg-config fuse3 --cflags --libs`
 
 # 2. Jalankan program FUSE (Mount encrypted_storage ke folder fuse_mount)
-./fuse_app fuse_mount
+./fuse fuse_mount
 
 # 3. Pengujian awal FUSE (Checker): Pastikan berkas notes.csv.enc terdekripsi otomatis
 cat fuse_mount/tests/notes.csv
@@ -707,17 +728,37 @@ fusermount3 -u fuse_mount
 
 ### **Output**
 
-* Tampilan proses `docker build` untuk image server database dan menjalankannya sehingga port 9000 terbuka.
+* Tampilan program FUSE dengan `./fuse fuse_mount`
 
-* Tampilan yang menunjukkan client yang terhubung ke server (port 9000) dan bukti bahwa file yang dibuat melalui mount point FUSE tersimpan dalam keadaan terenkripsi (XOR) di direktori asli.
+    ![Soal2_Img1](./Assets/soal_2/Img1.png)
 
-* Tampilan terminal client saat melakukan perintah `CREATE DATABASE`, `CREATE TABLE`, dan `INSERT` data.
+    ![Soal2_Img2](./Assets/soal_2/Img2.png)
+
+* Tes awal FUSE (Checker) untuk memastikan berkas notes.csv.enc terdekripsi otomatis dengan `cat fuse_mount/tests/notes.csv`
+
+    ![Soal2_Img3](./Assets/soal_2/Img3.png)
+
+* Tampilan proses `docker build` untuk image server database dan menjalankannya sehingga port 9000 terbuka dengan `docker build -t soal-2-modul-4-sisop .`
+
+    ![Soal2_Img4](./Assets/soal_2/Img4.png)
+
+* `docker run -d --name db_app -p 9000:9000 -v $(pwd)/fuse_mount:/app/db soal-2-modul-4-sisop`
+
+    ![Soal2_Img5](./Assets/soal_2/Img5.png)
+
+* Tampilan yang menunjukkan client yang terhubung ke server (port 9000) dengan `./client`
+
+    ![Soal2_Img6](./Assets/soal_2/Img6.png)
+
+* Tampilan terminal client saat melakukan perintah `CREATE DATABASE` dan `CREATE TABLE`
+
+    ![Soal2_Img7](./Assets/soal_2/Img7.png)
 
 ---
 
 ### **Kendala**
 
-* Tidak ada
+* Gagal mengeksekusi `docker run -d --name db_app -p 9000:9000 -v $(pwd)/fuse_mount:/app/db soal-2-modul-4-sisop` saat melakukan uji coba
 
 ---
 

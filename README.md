@@ -1056,29 +1056,48 @@ docker logs -f libraryit-logger
 
 # 8. Jika seluruh pengujian infrastruktur selesai, matikan ekosistem kontainer
 docker compose down
-
 ```
 
 ---
 
 ### **Output**
 
-* Tampilan terminal saat menjalankan `docker-compose up -d --build`. Pastikan kedua service (`libraryit-server` dan `libraryit-logger`) berjalan.
+* Tampilan menyalakan seluruh ekosistem server dan logger di background via Docker Compose dengan `docker compose up -d --build`
 
-* Screenshot Pengetesan Akses Samba (ACL):
+    ![Soal3_Img1](./Assets/soal_3/Img1.png)
 
-    * Menggunakan `smbclient` untuk melihat share yang tersedia (pembuktian `sourcecode` tidak *browseable*).
-    * Mencoba menulis ke folder `docs` dengan user `contributor` (harusnya gagal/Access Denied).
-    * Mencoba menulis ke folder `docs` dengan user `librarian` (harusnya berhasil).
+* Tampilan verifikasi status kontainer untuk memastikan kedua service sudah berjalan normal dengan `docker compose ps`
 
-* Tampikan output dari perintah `docker logs -f libraryit-logger` yang menunjukkan log aktivitas (INFO/WARNING) saat user mencoba mengakses file.
+    ![Soal3_Img2](./Assets/soal_3/Img2.png)
 
-* Tampilan hasil `ls -ld` pada direktori `./data/sourcecode` di laptop host untuk membuktikan permission `750` dan kepemilikan grup `staff`.
+* Tampilan melakukan pengecekan otomatisasi user dan grup di dalam database kontainer dengan `docker exec -it libraryit-server pdbedit -L` dan `docker exec -it libraryit-server getent group staff readonly`
+
+    ![Soal3_Img3](./Assets/soal_3/Img3.png)
+
+* Tampilan pengujian pemindaian folder share menggunakan akun member (sourcecode harus tersembunyi) dengan `smbclient -L //localhost -p 1445 -U member%member123`
+
+    ![Soal3_Img4](./Assets/soal_3/Img4.png)
+
+* Tampilan percobaan menulis ke folder `docs` dengan user `librarian` (harusnya berhasil) dengan `smbclient //localhost/docs -p 1445 -U librarian%lib789 -c "put nama_file.txt"`
+
+    ![Soal3_Img5](./Assets/soal_3/Img5.png)
+
+* Tampilan pengujian batasan hak tulis kontributor pada share 'docs' (harus ditolak/ACCESS_DENIED) dengan `smbclient //localhost/docs -p 1445 -U contributor%contrib456 -c "put beberapa_catatan.txt"`
+
+    ![Soal3_Img6](./Assets/soal_3/Img6.png)
+
+* Tampilan sedang memantau logs aktivitas audit secara real-time dari kontainer logger dengan `docker logs -f libraryit-logger`
+
+    ![Soal3_Img7](./Assets/soal_3/Img7.png)
+
+* Tampilan hasil `ls -ld` pada direktori `./data/sourcecode` di laptop host untuk membuktikan permission `750` dan kepemilikan grup `staff`
+
+    ![Soal3_Img8](./Assets/soal_3/Img8.png)
 
 ---
 
 ### **Kendala**
 
-* `smbclient` selalu error
+* `libraryit-server` crash
 
 ---
